@@ -2,7 +2,6 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -12,10 +11,50 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
   name      String?
-  createdAt DateTime @default(now())
+  role      UserRole  @default(USER)
+  products  Product[]
+  reviews   Reviews[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt()
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Product {
+  id          String @id @default(uuid())
+  name        String
+  description String
+
+  price Float
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  reviews Reviews[]
+
+  craetedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Reviews {
+  id      String @id @default(uuid())
+  comment String
+  rating  Float
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  craetedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

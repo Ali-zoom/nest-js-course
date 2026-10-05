@@ -8,66 +8,49 @@ import {
   Body,
   ValidationPipe,
   Put,
+  HttpCode,
 } from '@nestjs/common';
 import { CreateUserDto } from './DTO/createUser.dto.js';
 import { UpdateUserDto } from './DTO/updateUser.dto.js';
 import { UserServices } from './user.services.js';
+import { LoginUserDto } from './DTO/loginUser.dto.js';
 
 @Controller('api/users')
 export class UsersController {
-
   constructor(private readonly userService: UserServices) {}
-  private users = [
-    { id: 1, name: 'John Doe', age: 30 },
-    { id: 2, name: 'Jane Smith', age: 25 },
-    { id: 3, name: 'Alice Johnson', age: 35 },
-  ];
-  @Get('')
-  getAllUsers() {
-    return this.userService.getAll();
-  }
 
   @Get(':id')
-  getUserById(@Param('id', ParseIntPipe) id: number) {
-    const user = this.users.find((user) => user.id === id);
-    if (!user) {
-      return new NotFoundException(`User with id ${id} not found`);
-    }
+  getUserById(@Param('id', ParseIntPipe) id: number) {}
 
-    return user;
+  @Post('/auth/register')
+  register(@Body() body: CreateUserDto) {
+    return this.userService.registerUser(body);
   }
 
-  @Post('')
-  createUser(@Body() body: CreateUserDto) {
-    console.log('body', body);
-
-    const newUser = {
-      id: this.users.length + 1,
-      name: body.name,
-      age: body.age,
-    };
-    this.users.push(newUser);
-    return newUser;
+  @Post('/auth/login')
+   @HttpCode(200)
+  login(@Body() body: LoginUserDto) {
+    return this.userService.loginUser(body);
   }
 
-  @Put(':id')
-  updateUser(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: UpdateUserDto,
-  ) {
-    console.log('body', body);
+  // @Put(':id')
+  // updateUser(
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Body() body: UpdateUserDto,
+  // ) {
+  //   console.log('body', body);
 
-    const user = this.users.find((u) => u.id === id);
-    if (!user) {
-      return new NotFoundException(`User with id ${id} not found`);
-    }
+  //   const user = this.users.find((u) => u.id === id);
+  //   if (!user) {
+  //     return new NotFoundException(`User with id ${id} not found`);
+  //   }
 
-    const newUser = {
-      id: id,
-      name: body.name || user.name,
-      age: body.age || user.age,
-    };
-    this.users.push(newUser);
-    return newUser;
-  }
+  //   const newUser = {
+  //     id: id,
+  //     name: body.name || user.name,
+  //     age: body.age || user.age,
+  //   };
+  //   this.users.push(newUser);
+  //   return newUser;
+  // }
 }
