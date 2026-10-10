@@ -9,14 +9,18 @@ import {
   ValidationPipe,
   Put,
   HttpCode,
+<<<<<<< HEAD
   UseGuards,
   Req,
   Delete
+=======
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
 } from '@nestjs/common';
 import { CreateUserDto } from './DTO/createUser.dto.js';
 import { UpdateUserDto } from './DTO/updateUser.dto.js';
 import { UserServices } from './user.services.js';
 import { LoginUserDto } from './DTO/loginUser.dto.js';
+<<<<<<< HEAD
 import { AuthGuard } from './guards/auth.guard.js';
 import type { JwtPayloadType } from '../utils/types.js';
 import { CurrentUser } from './decorator/current-user.decorator.js';
@@ -24,6 +28,8 @@ import { User } from '../generated/prisma/client.js';
 import { Roles } from './decorator/user-role.decorator.js';
 import { UserRole } from '../utils/enums.js';
 import { AuthRolesGuard } from './guards/auth-roles.guard.js';
+=======
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
 
 @Controller('api/users')
 export class UsersController {
@@ -38,11 +44,16 @@ export class UsersController {
   }
 
   @Post('/auth/login')
+<<<<<<< HEAD
   @HttpCode(200)
+=======
+   @HttpCode(200)
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
   login(@Body() body: LoginUserDto) {
     return this.userService.loginUser(body);
   }
 
+<<<<<<< HEAD
   @Get('/auth/current-user')
   @UseGuards(AuthGuard)
   // getCurrentUser(@Req() request:any){ old way
@@ -74,6 +85,8 @@ export class UsersController {
     return this.userService.deleteUser(id,payload);
   }
 
+=======
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
   // @Put(':id')
   // updateUser(
   //   @Param('id', ParseIntPipe) id: number,

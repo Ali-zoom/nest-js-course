@@ -1,12 +1,19 @@
+<<<<<<< HEAD
 import { BadRequestException, Get, Injectable, NotFoundException } from '@nestjs/common';
+=======
+import { BadRequestException, Get, Injectable } from '@nestjs/common';
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateUserDto } from './DTO/createUser.dto.js';
 import bcrypt from 'bcryptjs';
 import { LoginUserDto } from './DTO/loginUser.dto.js';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokeType, JwtPayloadType } from '../utils/types.js';
+<<<<<<< HEAD
 import { UpdateUserDto } from './DTO/updateUser.dto.js';
 import { UserRole } from '../utils/enums.js';
+=======
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
 
 @Injectable()
 export class UserServices {
@@ -46,7 +53,11 @@ export class UserServices {
 
     const plainPassword = await bcrypt.compare(password, user.password); // true
     if (!plainPassword) {
+<<<<<<< HEAD
       throw new BadRequestException('check username or password from here');
+=======
+      throw new BadRequestException('check username or password');
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
     }
 
     const payLoad: JwtPayloadType = { id: user.id, role: user.role };
@@ -54,6 +65,7 @@ export class UserServices {
     return { accessToken };
   }
 
+<<<<<<< HEAD
   async getCurrentUser(id:string){
 
     const user=await this.prisma.user.findUnique({where:{id},})
@@ -98,6 +110,8 @@ export class UserServices {
 
 
 
+=======
+>>>>>>> 47a567bc117c759e3298386dea82475883322a25
   private generateAccessToken = async (
     payLoad: JwtPayloadType,
   ): Promise<string> => {
