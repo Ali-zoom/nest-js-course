@@ -15,7 +15,7 @@ import { ConfigService } from "@nestjs/config";
       signOptions:{expiresIn:configService.get<string>("JWT_EXPIRES_IN") as any} 
     })
   })],
-  exports:[],
+  exports:[UserServices],
   controllers: [UsersController],
   providers: [UserServices],
 })
