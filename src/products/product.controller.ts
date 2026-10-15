@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseGuards,Body, Put } from "@nestjs/common";
+import { Controller, Get, Param, Post, UseGuards,Body, Put, Query } from "@nestjs/common";
 import { ProductsService } from "./product.services.js";
 import { Roles } from "../users/decorator/user-role.decorator.js";
 import { UserRole } from "../utils/enums.js";
@@ -7,6 +7,7 @@ import { CurrentUser } from "../users/decorator/current-user.decorator.js";
 import type { JwtPayloadType } from "../utils/types.js";
 import { CreateProductrDto } from "./DTOs/create-product.dto.js";
 import { UpdateUserDto } from "../users/DTO/updateUser.dto.js";
+import { min } from "class-validator";
 
 @Controller("api/products/")
 export class ProductController{
@@ -19,8 +20,8 @@ export class ProductController{
     
 
     @Get("")
-    getProducts(){
-        return this.productService.getProducts()
+    getProducts(@Query("name") name:string,@Query("minPrice") minPrice:string,@Query("maxPrice") maxPrice:string){
+        return this.productService.getProducts(name,minPrice,maxPrice)
     }
 
     @Get(":id")

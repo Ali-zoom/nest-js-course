@@ -13,8 +13,25 @@ export class ProductsService{
     }
 
     
-     async getProducts(){
-        const products=await this.prisma.product.findMany({include:{user:true,reviews:true}});
+     async getProducts(name?:string,minPrice?:string,maxPrice?:string){
+
+       const filters = {
+  ...(name
+    ? { name: { contains: name, mode: "insensitive" as const } }
+    : {}),
+  ...(minPrice != null || maxPrice != null
+    ? {
+        price: {
+          ...(minPrice != null ? { gte: Number(minPrice) } : {}),
+          ...(maxPrice != null ? { lte: Number(maxPrice) } : {}),
+        },
+      }
+    : {}),
+};
+        const products=await this.prisma.product.findMany({
+            where:filters
+
+            ,include:{user:true,reviews:true}});
         return products;
     }
 
