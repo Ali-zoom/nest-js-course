@@ -7,7 +7,8 @@ import { JwtService } from '@nestjs/jwt';
 import { AccessTokeType, JwtPayloadType } from '../utils/types.js';
 import { UpdateUserDto } from './DTO/updateUser.dto.js';
 import { UserRole } from '../utils/enums.js';
-
+import {join} from 'node:path'
+import {unlinkSync} from 'node:fs'
 @Injectable()
 export class UserServices {
   constructor(
@@ -54,49 +55,90 @@ export class UserServices {
     return { accessToken };
   }
 
-  async getCurrentUser(id:string){
-
-    const user=await this.prisma.user.findUnique({where:{id},})
-    if(!user){
-      throw new NotFoundException('user not found')
+  async getCurrentUser(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('user not found');
     }
-    return user
+    return user;
   }
 
- async getAllUsers(){
-  return await this.prisma.user.findMany()
- } 
-
- async updateUser(id:string, {name,password}:UpdateUserDto){
-
-  const user=await this.prisma.user.findUnique({where:{id}})
-  if(!user){
-    throw new NotFoundException('user not found')
+  async getAllUsers(pageNumber: number, pageSize: number) {
+    return await this.prisma.user.findMany({
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+    });
   }
 
-  user.name=name??user.name;
+  async updateUser(id: string, { name, password }: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
 
-  const salt = await bcrypt.genSalt(10);
-  user.password=password?await bcrypt.hash(password, salt):user.password;
-  const updatedUser=await this.prisma.user.update({where:{id},data:user})
-  return updatedUser
-  
- }
+    user.name = name ?? user.name;
 
- async deleteUser(id:string,payload:JwtPayloadType){
-  const user=await this.prisma.user.findUnique({where:{id}})
-  if(!user){
-    throw new NotFoundException('user not found')
+    const salt = await bcrypt.genSalt(10);
+    user.password = password
+      ? await bcrypt.hash(password, salt)
+      : user.password;
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: user,
+    });
+    return updatedUser;
   }
-  if(user.role===UserRole.ADMIN || user.id===payload.id){
-    await this.prisma.user.delete({where:{id}})
-    return {message:'user deleted successfully'}
-  }else{
-    throw new BadRequestException('you are not allowed to delete this user')
+
+  async deleteUser(id: string, payload: JwtPayloadType) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    if (user.role === UserRole.ADMIN || user.id === payload.id) {
+      await this.prisma.user.delete({ where: { id } });
+      return { message: 'user deleted successfully' };
+    } else {
+      throw new BadRequestException('you are not allowed to delete this user');
+    }
   }
- }
 
+  async uploadProfileImage(userID: string, profileImage: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userID } });
+    if (!user) throw new NotFoundException('user not found');
+    if (user.profileImage) {
+      await this.removeProfileImage(userID);
+      return this.prisma.user.update({
+        where: { id: userID },
+        data: { profileImage: profileImage },
+        omit: { password: true },
+      });
+    } else {
+      return this.prisma.user.update({
+        where: { id: userID },
+        data: { profileImage: profileImage },
+        omit: { password: true },
+      });
+    }
+  }
 
+  async removeProfileImage(userID: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userID } });
+    if (!user) throw new NotFoundException('user not found');
+    if (!user.profileImage)
+      throw new BadRequestException('user does not have profile image');
+
+    const imagePath = join(
+      process.cwd(),
+      `./images/profile/${user.profileImage}`,
+    );
+    unlinkSync(imagePath);
+
+    return this.prisma.user.update({
+      where: { id: userID },
+      data: { profileImage: null },
+      omit: { password: true },
+    });
+  }
 
   private generateAccessToken = async (
     payLoad: JwtPayloadType,

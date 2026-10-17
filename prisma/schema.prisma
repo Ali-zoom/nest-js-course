@@ -17,6 +17,7 @@ model User {
   password  String
   name      String?
   role      UserRole  @default(USER)
+  profileImage String?
   products  Product[]
   reviews   Reviews[]
   createdAt DateTime  @default(now())

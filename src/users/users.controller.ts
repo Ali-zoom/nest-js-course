@@ -11,7 +11,12 @@ import {
   HttpCode,
   UseGuards,
   Req,
-  Delete
+  Delete,
+  Query,
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
+  Res
 } from '@nestjs/common';
 import { CreateUserDto } from './DTO/createUser.dto.js';
 import { UpdateUserDto } from './DTO/updateUser.dto.js';
@@ -24,6 +29,9 @@ import { User } from '../generated/prisma/client.js';
 import { Roles } from './decorator/user-role.decorator.js';
 import { UserRole } from '../utils/enums.js';
 import { AuthRolesGuard } from './guards/auth-roles.guard.js';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import type { Response } from 'express';
 
 @Controller('api/users')
 export class UsersController {
@@ -56,8 +64,8 @@ export class UsersController {
   @Get()
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthRolesGuard)
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  getAllUsers(@Query("pageNumber",ParseIntPipe) pageNumber:number,@Query("pageSize",ParseIntPipe) pageSize:number) {
+    return this.userService.getAllUsers(pageNumber,pageSize);
   }
 
   @Put()
@@ -72,6 +80,33 @@ export class UsersController {
   @UseGuards(AuthRolesGuard)
   deleteUser(@Param('id') id:string,@CurrentUser() payload: JwtPayloadType) {
     return this.userService.deleteUser(id,payload);
+  }
+
+    @Post("upload-profile-image")
+    @UseGuards(AuthGuard)
+    @UseInterceptors(
+      FileInterceptor('profile-image'),
+    )
+    uploadProfileImage(@UploadedFile() file: Express.Multer.File,@CurrentUser() payload:JwtPayloadType) {
+      if (!file) throw new BadRequestException('File not found');
+     
+      return this.userService.uploadProfileImage(payload.id,file.filename)
+    }
+  
+@Delete("image/remove-profile-image")
+@UseGuards(AuthGuard)
+removeProfileImage(@CurrentUser() payload:JwtPayloadType){
+  return this.userService.removeProfileImage(payload.id)
+}
+
+
+
+    //get uploaded file
+    @Get('images/:profileImage')
+    @UseGuards(AuthGuard)
+    getUploadedFile(@Param('profileImage') profileImage: string, @Res() res: Response) {
+    
+      return res.sendFile(profileImage, { root: 'images/profile' });
   }
 
   // @Put(':id')
