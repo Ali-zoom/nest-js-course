@@ -6,13 +6,41 @@ import { UsersModule } from './users/users.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ConfigModule } from '@nestjs/config';
 import { UploadsModule } from './uploads/uploads.module.js';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-        ConfigModule.forRoot({ isGlobal: true }), // loads .env, must come first
+    ConfigModule.forRoot({ isGlobal: true }), // loads .env, must come first
 
-    ProductModule,UsersModule,PrismaModule,UploadsModule],
+    ProductModule,
+    UsersModule,
+    PrismaModule,
+    UploadsModule,
+    ThrottlerModule.forRoot([// this for throttler
+      {
+        name:"short",
+        ttl: 4000, // 4 seconds
+        limit: 3, // 3 request every 4 seconds for each IP address (client)
+      },
+      {
+        name:"meduim",
+        ttl: 10000, // 10 seconds
+        limit: 5, // 3 request every 10 seconds for each IP address (client)
+      },
+       {
+        name:"long",
+        ttl: 60000, // 1 minutes
+        limit: 15, // 15 request every 1 minutes for each IP address (client)
+      },
+    ]),
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide:APP_GUARD,
+      useClass:ThrottlerGuard
+    }
+  ],
 })
 export class AppModule {}

@@ -32,6 +32,8 @@ import { AuthRolesGuard } from './guards/auth-roles.guard.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import type { Response } from 'express';
+import { throttle } from 'rxjs';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('api/users')
 export class UsersController {
