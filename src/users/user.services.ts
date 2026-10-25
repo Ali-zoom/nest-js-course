@@ -70,6 +70,33 @@ export class UserServices {
     });
   }
 
+  //pagination example
+  async getAllUsersForPagination(page: number, limit: number) {
+    const currentPage = page;
+    const pageSize = limit;
+    const [users, totalUsers] = await Promise.all([
+      this.prisma.user.findMany({
+        skip: (currentPage - 1) * pageSize,
+        take: pageSize,
+        orderBy: { id: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    return {
+      users,
+      totalUsers,
+      totalPages: Math.ceil(totalUsers / pageSize),
+      currentPage,
+      limit: pageSize,
+    };
+  }
+
   async updateUser(id: string, { name, password }: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {

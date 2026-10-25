@@ -15,6 +15,10 @@ async function bootstrap() {
   //applay helmet middleware to enhance security by setting various HTTP headers
   app.use(helmet());
 
-  await app.listen(process.env.PORT ?? 3000);
+  // this for cors enabilng
+app.enableCors({
+  origin: "http://localhost:3000",
+});
+  await app.listen(process.env.PORT ?? 5000);
 }
 await bootstrap();

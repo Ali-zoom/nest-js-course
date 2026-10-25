@@ -16,7 +16,8 @@ import {
   UseInterceptors,
   BadRequestException,
   UploadedFile,
-  Res
+  Res,
+  DefaultValuePipe
 } from '@nestjs/common';
 import { CreateUserDto } from './DTO/createUser.dto.js';
 import { UpdateUserDto } from './DTO/updateUser.dto.js';
@@ -38,6 +39,20 @@ import { Throttle } from '@nestjs/throttler';
 @Controller('api/users')
 export class UsersController {
   constructor(private readonly userService: UserServices) {}
+
+
+// pagination method
+  @Get('/users-list-example')
+  // @Roles(UserRole.ADMIN)
+  // @UseGuards(AuthRolesGuard)
+  getAllUsersWithPagination(
+    @Query('page',new DefaultValuePipe(1),ParseIntPipe) page: number,
+    @Query('limit',new DefaultValuePipe(10),ParseIntPipe) limit: number,
+  ) {
+    return this.userService.getAllUsersForPagination(page, limit);
+  }
+
+
 
   @Get(':id')
   getUserById(@Param('id', ParseIntPipe) id: number) {}
@@ -66,49 +81,58 @@ export class UsersController {
   @Get()
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthRolesGuard)
-  getAllUsers(@Query("pageNumber",ParseIntPipe) pageNumber:number,@Query("pageSize",ParseIntPipe) pageSize:number) {
-    return this.userService.getAllUsers(pageNumber,pageSize);
+  getAllUsers(
+    @Query('pageNumber', ParseIntPipe) pageNumber: number,
+    @Query('pageSize', ParseIntPipe) pageSize: number,
+  ) {
+    return this.userService.getAllUsers(pageNumber, pageSize);
   }
+
+  
 
   @Put()
   @Roles(UserRole.ADMIN, UserRole.USER)
   @UseGuards(AuthRolesGuard)
-  updateUser(@CurrentUser() payload: JwtPayloadType, @Body() body: UpdateUserDto) {
+  updateUser(
+    @CurrentUser() payload: JwtPayloadType,
+    @Body() body: UpdateUserDto,
+  ) {
     return this.userService.updateUser(payload.id, body);
   }
 
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthRolesGuard)
-  deleteUser(@Param('id') id:string,@CurrentUser() payload: JwtPayloadType) {
-    return this.userService.deleteUser(id,payload);
+  deleteUser(@Param('id') id: string, @CurrentUser() payload: JwtPayloadType) {
+    return this.userService.deleteUser(id, payload);
   }
 
-    @Post("upload-profile-image")
-    @UseGuards(AuthGuard)
-    @UseInterceptors(
-      FileInterceptor('profile-image'),
-    )
-    uploadProfileImage(@UploadedFile() file: Express.Multer.File,@CurrentUser() payload:JwtPayloadType) {
-      if (!file) throw new BadRequestException('File not found');
-     
-      return this.userService.uploadProfileImage(payload.id,file.filename)
-    }
-  
-@Delete("image/remove-profile-image")
-@UseGuards(AuthGuard)
-removeProfileImage(@CurrentUser() payload:JwtPayloadType){
-  return this.userService.removeProfileImage(payload.id)
-}
+  @Post('upload-profile-image')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('profile-image'))
+  uploadProfileImage(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() payload: JwtPayloadType,
+  ) {
+    if (!file) throw new BadRequestException('File not found');
 
+    return this.userService.uploadProfileImage(payload.id, file.filename);
+  }
 
+  @Delete('image/remove-profile-image')
+  @UseGuards(AuthGuard)
+  removeProfileImage(@CurrentUser() payload: JwtPayloadType) {
+    return this.userService.removeProfileImage(payload.id);
+  }
 
-    //get uploaded file
-    @Get('images/:profileImage')
-    @UseGuards(AuthGuard)
-    getUploadedFile(@Param('profileImage') profileImage: string, @Res() res: Response) {
-    
-      return res.sendFile(profileImage, { root: 'images/profile' });
+  //get uploaded file
+  @Get('images/:profileImage')
+  @UseGuards(AuthGuard)
+  getUploadedFile(
+    @Param('profileImage') profileImage: string,
+    @Res() res: Response,
+  ) {
+    return res.sendFile(profileImage, { root: 'images/profile' });
   }
 
   // @Put(':id')
@@ -131,4 +155,6 @@ removeProfileImage(@CurrentUser() payload:JwtPayloadType){
   //   this.users.push(newUser);
   //   return newUser;
   // }
+
+
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ProductModule } from './products/product.module.js';
@@ -8,6 +8,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UploadsModule } from './uploads/uploads.module.js';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { LoggerMiddleware } from './middlewares/logger.middleware.js';
+import path from 'path';
 
 @Module({
   imports: [
@@ -43,4 +45,30 @@ import { APP_GUARD } from '@nestjs/core';
     }
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {//nest module this for middleware
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+    .apply(LoggerMiddleware)
+    .forRoutes(
+      {
+        path:"api/products",// or for all routes "*"
+        method:RequestMethod.GET // or for all methods "ALL"
+      }
+    )
+
+    consumer
+    .apply(LoggerMiddleware)
+    .forRoutes(
+      {
+        path:"api/users",// or for all routes "*"
+        method:RequestMethod.GET // or for all methods "ALL"
+      },
+       {
+        path:"api/reviews",// or for all routes "*"
+        method:RequestMethod.ALL // or for all methods "ALL"
+      }
+    )
+  }
+
+
+}
