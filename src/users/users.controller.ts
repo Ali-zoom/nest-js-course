@@ -55,7 +55,9 @@ export class UsersController {
 
 
   @Get(':id')
-  getUserById(@Param('id', ParseIntPipe) id: number) {}
+  getUserById(@Param('id') id: string) {
+    return this.userService.getSingleUserById(id);
+  }
 
   @Post('/auth/register')
   register(@Body() body: CreateUserDto) {

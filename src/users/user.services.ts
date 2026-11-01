@@ -63,6 +63,15 @@ export class UserServices {
     return user;
   }
 
+
+ async getSingleUserById(id: string) {
+    return await this.prisma.user.findUnique ({
+      where: { id: id },
+    });
+  }
+
+
+
   async getAllUsers(pageNumber: number, pageSize: number) {
     return await this.prisma.user.findMany({
       skip: (pageNumber - 1) * pageSize,
